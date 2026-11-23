@@ -14,11 +14,18 @@ from pathlib import Path
 
 random.seed(1)
 
-file_name = r"D:\OneDrive - Hanze\Hanze Work\Year 2\Control Systems\Python\Control Systems - Python\saved_values.csv"
+file_name = Path(__file__).resolve().parent / "saved_values.csv"
 
 sensor_values = []  #List of sensor values
 
 user_continue = True  #variable for whether the the program should loop depending on user input
+
+def integer_validation(variable):
+    while True:
+        try:
+            return int(variable)
+        except ValueError:
+            variable = input("ERROR. Please input a valid number: ")
 
 # Another function taken from "Python session 2" used to read the values from the csv file to make use of the old values instead of generating new values.
 def load_readings(filename):
@@ -34,15 +41,20 @@ def load_readings(filename):
 
 # Function used at the start of the program to ask the user whether they want to use the last saved data written to the csv file or not.
 def value_choice ():
-    choice = str(input("Would you like to use old values?: ").strip())
-    while choice.lower() not in ("y", "yes", "sure", "please", "n", "no", "nope"):
-        choice = str(input("Your input is not within our scope. Please try again (Y/N): "))
+    choice = input("Would you like to use old values?: ").strip().lower()
+    
+    while choice not in ("y", "yes", "sure", "please", "n", "no", "nope"):
+        choice = input("Your input is not within our scope. Please try again (Y/N): ").strip().lower()
+
     if choice in ("yes", "please", "sure"):
         sensor_values = load_readings(file_name)
         print("Values have been loaded: ", sensor_values)
 
         no_generated = 0
-        alert_thresh = int(input("Alert threshold: "))
+        print("Number of values:", len(sensor_values))
+        alert_thresh = integer_validation(input("Alert threshold: "))
+        while not min(sensor_values) < alert_thresh < max(sensor_values):
+            alert_thresh = integer_validation(input("Threshold lies outside the value range. Please input valid threshold: "))
         
     else:
         sensor_type, no_generated, min_val, max_val, alert_thresh = get_user_input()
@@ -60,19 +72,22 @@ def value_choice ():
 
 # Function for user inputs (sensor type, number of generated values, minimum and maximum value and alert threshold.)
 def get_user_input(): 
-    sensor_type = str(input("Sensor type: ").strip())
+    sensor_type = input("Sensor type: ").strip()
     while sensor_type.lower() not in ("temp", "temperature", "light"):
-        sensor_type = str(input("This sensor type isn't in our database. Please try again: "))
-    no_generated = int(input("Number of readings to generate: "))
+        sensor_type = input("This sensor type isn't in our database. Please try again: ")
+
+    no_generated = (integer_validation(input("Number of readings to generate: ")))
     while no_generated < 1:
-        no_generated = int(input("This number is below the minimum (1). Please try again: "))
-    min_val = int(input("Minimum value: "))
-    max_val = int(input("Maximum value: "))
+        no_generated = integer_validation(input("This number is below the minimum (1). Please try again: "))
+
+    min_val = integer_validation(input("Minimum value: "))
+    max_val = integer_validation(input("Maximum value: "))
     while max_val < min_val:
-        max_val = int(input("This value is below your minimum value. Please input a larger value: "))
-    alert_thresh = int(input("Alert threshold: "))
+        max_val = integer_validation((input("This value is below your minimum value. Please input a larger value: ")))
+
+    alert_thresh = integer_validation(input("Alert threshold: "))
     while not min_val < alert_thresh < max_val:
-        alert_thresh = int(input("Your alert threshold lies outside of you value range. Please input a value within your range: "))
+        alert_thresh = integer_validation(input("Your alert threshold lies outside of you value range. Please input a value within your range: "))
     return(sensor_type, no_generated, min_val, max_val, alert_thresh)
 
 # Function to print out the users values for clarification
@@ -83,8 +98,9 @@ def print_vals(sensor_type, no_generated, alert_thresh):
 
 #Function to artificially generate the sensors values taking into account the minimum and maximum values and the total number to generate.
 def generate_readings(min_val, max_val, no_generated):
+    sensor_values = []
     for x in range(int(no_generated)):
-        sensor_values.append(random.randrange(min_val, max_val))
+        sensor_values.append(random.randint(min_val, max_val))
     return (sensor_values)
 
 # This function is used along with numpy to calculate all of the statistis on our sensor values.
@@ -146,12 +162,12 @@ def plotting_readings(sensor_values, alert_thresh):
 
 # A function to ask the user whether they want to continue the loop again or end the program all
 def continue_request():
-    user_continue = str(input("Would you like to repeat this process (Y/N): "))
-    if user_continue == "Y":
-        user_continue = True
-    else:
-        user_continue = False
-    return(user_continue)
+    user_continue = input("Would you like to repeat this process (Y/N): ").strip().lower()
+
+    while user_continue not in ("y", "yes", "n", "no") :
+        user_continue = input("ERROR. Not within scope. Please isert a valid input: ").strip().lower()
+
+    return user_continue in ("y", "yes")
 
 
 
