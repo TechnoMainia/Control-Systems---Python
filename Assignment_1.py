@@ -30,12 +30,15 @@ def integer_validation(variable):
 # Another function taken from "Python session 2" used to read the values from the csv file to make use of the old values instead of generating new values.
 def load_readings(filename):
     readings = []
+    try:
+        with open(filename, "r", newline="", encoding="utf-8") as file:
+            reader = csv.DictReader(file)
 
-    with open(filename, "r", newline="", encoding="utf-8") as file:
-        reader = csv.DictReader(file)
-
-        for row in reader:
-            readings.append(float(row["sensor_values"]))
+            for row in reader:
+                readings.append(float(row["sensor_values"]))
+    
+    except OSError as error:
+        print("Could not access the file:", error)
 
     return readings
 
@@ -46,7 +49,7 @@ def value_choice ():
     while choice not in ("y", "yes", "sure", "please", "n", "no", "nope"):
         choice = input("Your input is not within our scope. Please try again (Y/N): ").strip().lower()
 
-    if choice in ("yes", "please", "sure"):
+    if choice in ("y", "yes", "please", "sure"):
         sensor_values = load_readings(file_name)
         print("Values have been loaded: ", sensor_values)
 
@@ -82,8 +85,8 @@ def get_user_input():
 
     min_val = integer_validation(input("Minimum value: "))
     max_val = integer_validation(input("Maximum value: "))
-    while max_val < min_val:
-        max_val = integer_validation((input("This value is below your minimum value. Please input a larger value: ")))
+    while max_val < min_val + 2:
+        max_val = integer_validation((input("Maximum value must exceed the minimum by 2. Please input a larger value: ")))
 
     alert_thresh = integer_validation(input("Alert threshold: "))
     while not min_val < alert_thresh < max_val:
@@ -152,12 +155,15 @@ def save_readings(filename, sensor_values):
 def plotting_readings(sensor_values, alert_thresh):
     plt.plot(range(1, int(len(sensor_values))+1), sensor_values)
     plt.axhline(y=int(alert_thresh), color="r", linestyle="--")
-    plt.show()
     plt.xlabel("List position")
     plt.ylabel("Sensor Value")
+    plt.show()
 
     sensor_values_sorted = sorted(sensor_values)
     plt.hist(sensor_values_sorted)
+    plt.xlabel("Sensor value")
+    plt.ylabel("Number of readings")
+    plt.axvline(x=alert_thresh, color="r", linestyle="--")
     plt.show()
 
 # A function to ask the user whether they want to continue the loop again or end the program all
