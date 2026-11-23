@@ -56,8 +56,7 @@ def value_choice ():
         no_generated = 0
         print("Number of values:", len(sensor_values))
         alert_thresh = integer_validation(input("Alert threshold: "))
-        while not min(sensor_values) < alert_thresh < max(sensor_values):
-            alert_thresh = integer_validation(input("Threshold lies outside the value range. Please input valid threshold: "))
+
         
     else:
         sensor_type, no_generated, min_val, max_val, alert_thresh = get_user_input()
@@ -85,12 +84,10 @@ def get_user_input():
 
     min_val = integer_validation(input("Minimum value: "))
     max_val = integer_validation(input("Maximum value: "))
-    while max_val < min_val + 2:
-        max_val = integer_validation((input("Maximum value must exceed the minimum by 2. Please input a larger value: ")))
+    while max_val < min_val:
+        max_val = integer_validation((input("This maximum value is below the minimum. Please input a larger value: ")))
 
     alert_thresh = integer_validation(input("Alert threshold: "))
-    while not min_val < alert_thresh < max_val:
-        alert_thresh = integer_validation(input("Your alert threshold lies outside of you value range. Please input a value within your range: "))
     return(sensor_type, no_generated, min_val, max_val, alert_thresh)
 
 # Function to print out the users values for clarification
